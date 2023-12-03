@@ -4,5 +4,5 @@ type Props = PageComponentProps;
 
 // dossier:\documents
 export default async function Page(props: Props) {
-  return <div>Page app\documents\page.tsx</div>;
+  return <div>Bonjour document</div>;
 }
