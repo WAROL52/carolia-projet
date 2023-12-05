@@ -3,6 +3,7 @@ import React from "react";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
 import { useServerInsertedHTML } from "next/navigation";
+import { ConfigProvider } from "antd";
 
 export type AntdesignProviderProps = React.PropsWithChildren;
 
@@ -22,5 +23,19 @@ export function AntdesignProvider({ children }: AntdesignProviderProps) {
       />
     );
   });
-  return <StyleProvider cache={cache}>{children}</StyleProvider>;
+  return (
+    <StyleProvider cache={cache}>
+      <ConfigProvider
+        theme={{
+          components: {
+            Table: {
+              rowHoverBg: "rgb(148 163 184 / var(--tw-bg-opacity))",
+            },
+          },
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </StyleProvider>
+  );
 }
