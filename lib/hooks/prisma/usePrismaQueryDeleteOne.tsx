@@ -1,0 +1,32 @@
+"use client";
+
+import {
+  PrismaModelNameUncapitalize,
+  PrismaClientType,
+} from "@/lib/prisma/prismaType";
+import { Prisma } from "@prisma/client";
+import {
+  PrismaQueryMutationOption,
+  usePrismaQueryMutation,
+} from "./usePrismaQueryMutation";
+
+export function usePrismaQueryDeleteOne<
+  T extends PrismaModelNameUncapitalize,
+  A extends Prisma.Args<PrismaClientType[T], "delete">,
+  AR,
+  R = Prisma.Result<PrismaClientType[T], A, "delete">
+>(
+  modelName: T,
+  where: (arg: AR) => A["where"],
+  options?: PrismaQueryMutationOption<R>
+) {
+  return usePrismaQueryMutation(
+    (prisma) => (arg: AR) => {
+      // @ts-ignore
+      return prisma[modelName].delete({
+        where: where(arg),
+      }) as Promise<R>;
+    },
+    options
+  );
+}

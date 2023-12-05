@@ -1,6 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Drawer, Popover } from "antd";
+import { useAuthentification } from "@/lib/hooks/next-auth/useAuthentification";
+import { usePathname } from "next/navigation";
+import { LoadingOutlined } from "@ant-design/icons";
 export type HeaderUserProfileProps = {};
 
 export function HeaderUserProfile({}: HeaderUserProfileProps) {
@@ -37,15 +40,24 @@ export function HeaderUserProfile({}: HeaderUserProfileProps) {
     </Popover>
   );
 }
+
 function UserProfileMenu() {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const pathName = usePathname();
+  useEffect(() => setIsLoading(false), [pathName]);
+  const { signOut, session, update } = useAuthentification();
+  const logout = () => {
+    setIsLoading(true);
+    signOut({ callbackUrl: "/login" });
+  };
   return (
     <div className="me-3 z-50 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl">
       <div className="py-3 px-4">
         <span className="block text-sm font-semibold text-gray-900 dark:text-white">
-          Neil Sims
+          {session?.user?.name}
         </span>
         <span className="block text-sm text-gray-900 truncate dark:text-white">
-          name@flowbite.com
+          {session?.user?.email}
         </span>
       </div>
       <ul
@@ -150,12 +162,13 @@ function UserProfileMenu() {
         className="py-1 text-gray-700 dark:text-gray-300"
         aria-labelledby="dropdown"
       >
-        <li>
+        <li onClick={logout}>
           <a
             href="#"
-            className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+            className="block rounded-md py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
           >
-            Sign out
+            {isLoading && <LoadingOutlined />}
+            Se Déconnecter
           </a>
         </li>
       </ul>
