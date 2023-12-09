@@ -4,13 +4,29 @@ import { TextComponent } from "@/components/antd/typography/TextComponent";
 import {
   AppstoreOutlined,
   BarsOutlined,
+  LoadingOutlined,
   MoreOutlined,
+  PlusOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { S3 } from "@aws-sdk/client-s3";
-import { Button, Card, Dropdown, Flex, Segmented, Space, Table } from "antd";
+import {
+  Button,
+  Card,
+  Dropdown,
+  Flex,
+  Input,
+  Segmented,
+  Select,
+  Space,
+  Table,
+} from "antd";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import React, { ReactNode, useEffect } from "react";
+import { useBuckets } from "./useBuckets";
+import { S3Object, useS3Objects } from "./useS3Objects";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type DocumentManagerLayout = "card" | "list";
 export type DocumentFile = {
@@ -26,28 +42,21 @@ export type DocumentManagerProps = {
 export function DocumentManager({
   layout: layoutProps = "list",
 }: DocumentManagerProps) {
-  const test = async () => {
-    const client = new S3({
-      region: "rolio",
-      endpoint: "http://127.0.0.1:9000",
-      credentials: {
-        accessKeyId: "HjQFW6kHjQqM0E1eQyDM",
-        secretAccessKey: "NPZsv03u1B80P5VPX5hgFkkp7IA8T4Fl2Nrp3WTw",
-      },
-    });
-
-    const result = await client.listBuckets({});
-    const buckets = result.Buckets;
-    console.log({ buckets });
-  };
-  useEffect(() => {
-    test();
-  }, []);
   const [layout, setLayout] = React.useState(layoutProps);
+  const [bucketName, setBucketName] = React.useState<string | null>(null);
   useEffect(() => setLayout(layoutProps), [layoutProps]);
+
+  const {
+    listS3Objects,
+    dataS3ObjectsUpdatedAt,
+    isS3ObjectsFetching,
+    isS3ObjectsLoading,
+  } = useS3Objects({ bucketName });
+  console.log(listS3Objects);
+
   return (
     <Card
-      title="Disque nuagique"
+      title={<Title onSelect={setBucketName} />}
       extra={
         <Space>
           <Button>Créer un dossier</Button>
@@ -65,83 +74,85 @@ export function DocumentManager({
       }
       rootClassName="bg-slate-700"
     >
-      {layout === "card" ? <CardElement /> : <ListElement />}
+      {layout === "card" ? (
+        <CardElement />
+      ) : (
+        <ListElement
+          listS3Objects={listS3Objects}
+          dataS3ObjectsUpdatedAt={dataS3ObjectsUpdatedAt}
+          isS3ObjectsFetching={isS3ObjectsFetching}
+          isS3ObjectsLoading={isS3ObjectsLoading}
+        />
+      )}
     </Card>
   );
 }
-
-function ListElement() {
+type TitleProps = {
+  onSelect?: (BucketsName: string | null) => void;
+};
+function Title({ onSelect }: TitleProps) {
+  const { listBuckets, isBucketsFetching, isBucketsLoading } = useBuckets();
+  const [isModeCreate, setIsModeCreate] = React.useState(false);
+  useEffect(() => onSelect?.(null), []);
+  return (
+    <Space>
+      {(isBucketsFetching || isBucketsLoading) && <LoadingOutlined />}
+      <Space.Compact>
+        <Select
+          style={{ width: 120 }}
+          onChange={onSelect}
+          options={listBuckets.map((buckets) => ({
+            value: buckets.Name,
+            label: buckets.Name,
+          }))}
+          loading={isBucketsFetching || isBucketsLoading}
+        />
+        {isModeCreate && (
+          <>
+            <Input />
+            <Button
+              title="Créer un nouveau Bucket"
+              onClick={() => setIsModeCreate(false)}
+              // icon={<SaveOutlined />}
+            >
+              Annuler
+            </Button>
+            <Button
+              title="Créer un nouveau Bucket"
+              onClick={() => setIsModeCreate(true)}
+              icon={<SaveOutlined />}
+            >
+              Enregistrer
+            </Button>
+          </>
+        )}
+        {!isModeCreate && (
+          <Button
+            title="Créer un nouveau Bucket"
+            onClick={() => setIsModeCreate(true)}
+            icon={<PlusOutlined />}
+          />
+        )}
+      </Space.Compact>
+    </Space>
+  );
+}
+type ListElementProps = ReturnType<typeof useS3Objects> & {};
+function ListElement({
+  listS3Objects,
+  dataS3ObjectsUpdatedAt,
+  isS3ObjectsFetching,
+  isS3ObjectsLoading,
+}: ListElementProps) {
   return (
     <Table
+      loading={isS3ObjectsLoading}
       className="bg-slate-700"
       rootClassName="bg-slate-700"
       rowClassName={"bg-slate-500"}
       size="small"
-      dataSource={[
-        {
-          name: "folder 01",
-          key: 1,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 2",
-          key: 2,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 3",
-          key: 9,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 4",
-          key: 4,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 5",
-          key: 5,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 6",
-          key: 6,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 7",
-          key: 7,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 8",
-          key: 8,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-        {
-          name: "folder 9",
-          key: 9,
-          size: 1234,
-          type: "folder",
-          createAt: new Date(),
-        },
-      ]}
+      pagination={{}}
+      dataSource={listS3Objects}
       columns={[
         {
           dataIndex: "name",
@@ -155,7 +166,7 @@ function ListElement() {
                 <TextComponent
                   className="font-semibold"
                   variantColorLevel={800}
-                  text={record.name}
+                  text={record.Key}
                 />
               </Space>
             );
@@ -171,7 +182,7 @@ function ListElement() {
                 <TextComponent
                   className="font-semibold"
                   variantColorLevel={800}
-                  text={record.size}
+                  text={record.Size}
                 />
               </Space>
             );
@@ -187,7 +198,7 @@ function ListElement() {
                 <TextComponent
                   className="font-semibold"
                   variantColorLevel={800}
-                  text={record.type}
+                  text={record.StorageClass}
                 />
               </Space>
             );
@@ -200,7 +211,7 @@ function ListElement() {
           render(value, record, index) {
             return (
               <Space>
-                <ShowerDate date={dayjs(record.createAt)} />
+                <ShowerDate date={dayjs(record.LastModified)} />
               </Space>
             );
           },
