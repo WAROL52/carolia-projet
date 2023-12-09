@@ -25,7 +25,9 @@ export const authOptions={
           // You can also use the `req` object to obtain additional parameters
           // (i.e., the request IP address)
           const account=await prismaInstance.account.findUnique({
-            where:{email:credentials?.email,User:{
+            where:{
+              email:credentials?.email,
+              User:{
               password:credentials?.password
             }},
             include:{

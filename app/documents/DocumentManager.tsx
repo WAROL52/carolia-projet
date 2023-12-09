@@ -6,6 +6,7 @@ import {
   BarsOutlined,
   MoreOutlined,
 } from "@ant-design/icons";
+import { S3 } from "@aws-sdk/client-s3";
 import { Button, Card, Dropdown, Flex, Segmented, Space, Table } from "antd";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
@@ -25,6 +26,23 @@ export type DocumentManagerProps = {
 export function DocumentManager({
   layout: layoutProps = "list",
 }: DocumentManagerProps) {
+  const test = async () => {
+    const client = new S3({
+      region: "rolio",
+      endpoint: "http://127.0.0.1:9000",
+      credentials: {
+        accessKeyId: "HjQFW6kHjQqM0E1eQyDM",
+        secretAccessKey: "NPZsv03u1B80P5VPX5hgFkkp7IA8T4Fl2Nrp3WTw",
+      },
+    });
+
+    const result = await client.listBuckets({});
+    const buckets = result.Buckets;
+    console.log({ buckets });
+  };
+  useEffect(() => {
+    test();
+  }, []);
   const [layout, setLayout] = React.useState(layoutProps);
   useEffect(() => setLayout(layoutProps), [layoutProps]);
   return (

@@ -29,6 +29,7 @@ export function usePrismaQueryMutation<T, A>(
   // @ts-ignore
   const queryOption = useMutation({
     ...options,
+    // @ts-ignore
     mutationFn,
     onSuccess(_: any, _2: any, _3: any) {
       queryClient.invalidateQueries({ queryKey: [prisma.prismaModelName] });

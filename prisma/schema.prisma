@@ -40,7 +40,7 @@ model User {
   birthday  DateTime?
   bornAt    String?
 
-  Account   Account @relation(fields: [accountId], references: [id])
+  Account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   accountId Int     @unique
 }
 
